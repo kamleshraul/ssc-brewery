@@ -11,12 +11,26 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+	/*If we define password encoder then it will override default encoder and use this one*/
+	/*@Bean
+	PasswordEncoder passwordEncoder() {
+		//NoOpPassword encoder is used for legacy system, it does not calculate hash, it keep password as plain text
+		return NoOpPasswordEncoder.getInstance();
+	}*/
+	
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
         http
@@ -34,21 +48,51 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			
 	}
 
+	
+	/*
+	 * @Bean PasswordEncoder passwordEncoder() { return new
+	 * LdapShaPasswordEncoder(); }
+	 */
+	
+	/*
+	 * @Bean PasswordEncoder passwordEncoder() { return new
+	 * StandardPasswordEncoder(); //sha256 ecoder }
+	 */
+	
+	/*
+	 * @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder();
+	 * }
+	 */
+	
+	/*
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}*/
+	
+	@Bean //using our own implementation of PasswordEncoderFactory
+	PasswordEncoder passwordEncoder() {
+		return CustomPasswordEncoderFactory.createDelegatingPasswordEncoder();
+	}
+	
 	// another way to create InMemoryUserDetails
 	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 			.withUser("spring")
-			.password("{noop}security") //{noop} is required as we not configuring any password encoder
+			.password("security") //{noop} is required as we not configuring any password encoder
 			.roles("ADMIN")
 			.and()
 			.withUser("user")
-			.password("{noop}password")
+			//.password("{SSHA}nWpQ8r6ofjVVKEIVMedRcdk9GprTkFCKS/YSQA==")
+			.password("$2a$10$uelHC8xqeuONaAWHNH8/8.AeixMpq8KJ5/X/ZcstlYssg3C6bdK/u")
 			.roles("User")
 			.and()
 			.withUser("scott")
-			.password("{noop}tiger")
+			//.password("{noop}tiger") // we defined NoOpPassword encoder due to which {noop} not needed any more
+			.password("{bcrypt15}$2a$15$KsT.tgU7KoIJ9GaIy0tJQO1oLC6.H0ouXCd19ToqK5jxj4JQ/VetW") 
+			//make sure you add {bcrypt15} in password for spring security to detect our custom password encoder
 			.roles("Customer");
 			
 	}
