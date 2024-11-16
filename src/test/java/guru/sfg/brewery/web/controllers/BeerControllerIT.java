@@ -3,6 +3,7 @@ package guru.sfg.brewery.web.controllers;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,6 +27,43 @@ import guru.sfg.brewery.services.BreweryService;
 
 @WebMvcTest
 public class BeerControllerIT extends BaseIT {
+	
+	
+	/*deleteBeer and deleteBeerBadCredentials test RestUrlParameterAuthFilter*/
+	@Test
+	void deleteBeerUrlParamter() throws Exception{
+		mockMvc.perform(delete("/api/v1/beer/493410b3-dd0b-4b78-97bf-289f50f6e74f")
+				.param("Api-Key", "spring")
+				.param("Api-Secret", "security"))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	void deleteBeerUrlParameterBadCredentials() throws Exception{
+		mockMvc.perform(delete("/api/v1/beer/493410b3-dd0b-4b78-97bf-289f50f6e74f")
+				.param("Api-Key", "spring")
+				.param("Api-Secret", "securityXXX"))
+				.andExpect(status().isUnauthorized());
+	}
+	
+
+	/*deleteBeer and deleteBeerBadCredentials test RestHeaderAuthFilter*/
+	@Test
+	void deleteBeer() throws Exception{
+		mockMvc.perform(delete("/api/v1/beer/493410b3-dd0b-4b78-97bf-289f50f6e74f")
+				.header("Api-Key", "spring")
+				.header("Api-Secret", "security"))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	void deleteBeerBadCredentials() throws Exception{
+		mockMvc.perform(delete("/api/v1/beer/493410b3-dd0b-4b78-97bf-289f50f6e74f")
+				.header("Api-Key", "spring")
+				.header("Api-Secret", "securityXXX"))
+				.andExpect(status().isUnauthorized());
+	}
+	
 
 	@Test
 	void initCreationFormBcrypt15() throws Exception{

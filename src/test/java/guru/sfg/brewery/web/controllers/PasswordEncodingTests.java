@@ -59,8 +59,11 @@ public class PasswordEncodingTests {
 		System.out.println("Bcrypt Password Encoder");
 		String bcryptPassword= bcrypt.encode(PASSWORD);
 		System.out.println(bcryptPassword);
+		String bcryptPasswordSecurity= bcrypt.encode("security");
+		System.out.println("Security: "+bcryptPasswordSecurity);
+	
 		assertTrue(bcrypt.matches(bcryptPassword, PASSWORD));
-	}
+	}	
 	
 	@Test
 	void testBcrypt15() {

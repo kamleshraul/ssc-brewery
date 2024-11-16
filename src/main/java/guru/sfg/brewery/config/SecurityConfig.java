@@ -3,6 +3,7 @@ package guru.sfg.brewery.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,6 +19,11 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import guru.sfg.brewery.security.RestHeaderAuthFilter;
+import guru.sfg.brewery.security.RestUrlParameterAuthFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -31,9 +37,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}*/
 	
 	
+	protected RestHeaderAuthFilter restHeaderAuthFilter(AuthenticationManager authenticationManger) {
+		RestHeaderAuthFilter filter = new RestHeaderAuthFilter(new AntPathRequestMatcher("/api/**"));
+		filter.setAuthenticationManager(authenticationManger);
+		return filter;
+	}
+	
+	protected RestUrlParameterAuthFilter restUrlParameterAuthFilter(AuthenticationManager authenticationManger) {
+		RestUrlParameterAuthFilter filter = new RestUrlParameterAuthFilter(new AntPathRequestMatcher("/api/**"));
+		filter.setAuthenticationManager(authenticationManger);
+		return filter;
+	}
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-        http
+		
+			
+		
+			/*Add our custom Authentication Filter before UsernamePasswordAuthenticationFilter
+			 * */
+			http.addFilterBefore(restHeaderAuthFilter(authenticationManager())
+								,UsernamePasswordAuthenticationFilter.class)
+				.csrf().disable(); //disable csrf for testing purpose here
+			
+			/*Add our custom Authentication Filter before RestHeaderAuthFilter*/
+			http.addFilterBefore(restUrlParameterAuthFilter(authenticationManager())
+							,RestHeaderAuthFilter.class)
+			.csrf().disable(); // no need to define here as it is global setting once is suffice
+		
+			http
                 .authorizeRequests(authorize ->
                         authorize
                         	.antMatchers("/","/webjars/**","/resources/**").permitAll()
@@ -81,12 +113,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 			.withUser("spring")
-			.password("security") //{noop} is required as we not configuring any password encoder
+			.password("{bcrypt}$2a$10$Ske5O1y8gwkluixPGnlg0.rDsMtVSqmkIDLBc0oZYPqfX2vz9RfXK") //{noop} is required as we not configuring any password encoder
 			.roles("ADMIN")
 			.and()
 			.withUser("user")
 			//.password("{SSHA}nWpQ8r6ofjVVKEIVMedRcdk9GprTkFCKS/YSQA==")
-			.password("$2a$10$uelHC8xqeuONaAWHNH8/8.AeixMpq8KJ5/X/ZcstlYssg3C6bdK/u")
+			.password("{bcrypt}$2a$10$uelHC8xqeuONaAWHNH8/8.AeixMpq8KJ5/X/ZcstlYssg3C6bdK/u")
 			.roles("User")
 			.and()
 			.withUser("scott")
