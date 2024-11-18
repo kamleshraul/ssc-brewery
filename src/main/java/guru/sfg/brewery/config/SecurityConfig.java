@@ -77,18 +77,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         	//.antMatchers(HttpMethod.GET,"/api/v1/beer/**").permitAll()
                         	//.antMatchers(HttpMethod.DELETE,"/api/v1/beer/**").hasRole("ADMIN")
                         	//.mvcMatchers(HttpMethod.GET,"/api/v1/beerUpc/{upc}").permitAll()
-                        	.antMatchers(HttpMethod.GET,"/brewery/breweries/**")
+                        	/*.antMatchers(HttpMethod.GET,"/brewery/breweries/**")
                         		.hasAnyRole("ADMIN","CUSTOMER")
                         	.antMatchers(HttpMethod.GET,"/brewery/api/v1/breweries/**")
-                        		.hasAnyRole("ADMIN","CUSTOMER")
-                        	.antMatchers("/beers/find/**","/beer*")
-                        		.hasAnyRole("CUSTOMER","USER","ADMIN")
-                        	.antMatchers(HttpMethod.GET,"/api/v1/beer/**")
+                        		.hasAnyRole("ADMIN","CUSTOMER")*/
+                        	/*.antMatchers("/beers/find/**","/beer*")
+                        		.hasAnyRole("CUSTOMER","USER","ADMIN")*/
+                        	//commented out following as AnnotationBase @PreAuthorize used in controller to provide authority	
+                        	/*.antMatchers(HttpMethod.GET,"/api/v1/beer/**")
                         		.hasAnyRole("CUSTOMER","USER","ADMIN")
                         	.antMatchers(HttpMethod.DELETE,"/api/v1/beer/**")
                         		.hasRole("ADMIN")
                         	.mvcMatchers(HttpMethod.GET,"/api/v1/beerUpc/{upc}")
-                        		.hasAnyRole("CUSTOMER","USER","ADMIN")
+                        		.hasAnyRole("CUSTOMER","USER","ADMIN")*/
                 )
                 .authorizeRequests(requests -> requests
                         .anyRequest().authenticated())
