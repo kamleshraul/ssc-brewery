@@ -68,6 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			http
                 .authorizeRequests(authorize ->
                         authorize
+                        	.antMatchers("/h2-console/**").permitAll() // use to access h2 console
                         	.antMatchers("/","/webjars/**","/resources/**").permitAll()
                         	.antMatchers("/beers/find/**","/beer*").permitAll()
                         	.antMatchers(HttpMethod.GET,"/api/v1/beer/**").permitAll()
@@ -77,6 +78,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
+			
+			//h2 console setting
+			http.headers().frameOptions().sameOrigin();
 			
 	}
 
@@ -109,7 +113,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	// another way to create InMemoryUserDetails
 	
-	@Override
+/* Commenting as we have created Our own JpaUserDetailsService to load username and password from db
+ * 
+ * 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 			.withUser("spring")
@@ -128,7 +134,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.roles("Customer");
 			
 	}
-
+*/
 	//creating our own inmemory userdetailservice for credentials
 	//as we implemented our own , user credentials defined in application.properties
 	//won't get used now
