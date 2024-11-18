@@ -6,6 +6,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -27,10 +28,11 @@ import guru.sfg.brewery.security.RestUrlParameterAuthFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(securedEnabled = true,prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	/*If we define password encoder then it will override default encoder and use this one*/
-	/*@Bean
+	/*@Bean,
 	PasswordEncoder passwordEncoder() {
 		//NoOpPassword encoder is used for legacy system, it does not calculate hash, it keep password as plain text
 		return NoOpPasswordEncoder.getInstance();
@@ -56,29 +58,44 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		
 			/*Add our custom Authentication Filter before UsernamePasswordAuthenticationFilter
 			 * */
-			http.addFilterBefore(restHeaderAuthFilter(authenticationManager())
+			/*http.addFilterBefore(restHeaderAuthFilter(authenticationManager())
 								,UsernamePasswordAuthenticationFilter.class)
-				.csrf().disable(); //disable csrf for testing purpose here
+				.csrf().disable();*/ //disable csrf for testing purpose here
 			
 			/*Add our custom Authentication Filter before RestHeaderAuthFilter*/
-			http.addFilterBefore(restUrlParameterAuthFilter(authenticationManager())
-							,RestHeaderAuthFilter.class)
-			.csrf().disable(); // no need to define here as it is global setting once is suffice
-		
+			/*
+			 * http.addFilterBefore(restUrlParameterAuthFilter(authenticationManager())
+			 * ,RestHeaderAuthFilter.class) .csrf().disable();
+			 */ // no need to define here as it is global setting once is suffice
+			
 			http
                 .authorizeRequests(authorize ->
                         authorize
                         	.antMatchers("/h2-console/**").permitAll() // use to access h2 console
                         	.antMatchers("/","/webjars/**","/resources/**").permitAll()
-                        	.antMatchers("/beers/find/**","/beer*").permitAll()
-                        	.antMatchers(HttpMethod.GET,"/api/v1/beer/**").permitAll()
-                        	.mvcMatchers(HttpMethod.GET,"/api/v1/beerUpc/{upc}").permitAll()
+                        	//.antMatchers("/beers/find/**","/beer*").permitAll()
+                        	//.antMatchers(HttpMethod.GET,"/api/v1/beer/**").permitAll()
+                        	//.antMatchers(HttpMethod.DELETE,"/api/v1/beer/**").hasRole("ADMIN")
+                        	//.mvcMatchers(HttpMethod.GET,"/api/v1/beerUpc/{upc}").permitAll()
+                        	.antMatchers(HttpMethod.GET,"/brewery/breweries/**")
+                        		.hasAnyRole("ADMIN","CUSTOMER")
+                        	.antMatchers(HttpMethod.GET,"/brewery/api/v1/breweries/**")
+                        		.hasAnyRole("ADMIN","CUSTOMER")
+                        	.antMatchers("/beers/find/**","/beer*")
+                        		.hasAnyRole("CUSTOMER","USER","ADMIN")
+                        	.antMatchers(HttpMethod.GET,"/api/v1/beer/**")
+                        		.hasAnyRole("CUSTOMER","USER","ADMIN")
+                        	.antMatchers(HttpMethod.DELETE,"/api/v1/beer/**")
+                        		.hasRole("ADMIN")
+                        	.mvcMatchers(HttpMethod.GET,"/api/v1/beerUpc/{upc}")
+                        		.hasAnyRole("CUSTOMER","USER","ADMIN")
                 )
                 .authorizeRequests(requests -> requests
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
 			
+			http.csrf().disable();
 			//h2 console setting
 			http.headers().frameOptions().sameOrigin();
 			
