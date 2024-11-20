@@ -43,7 +43,7 @@ abstract public class BaseIT {
 	*/
 	
 	@BeforeEach
-	void setUp() {
+	public void setUp() {
 		mockMvc=MockMvcBuilders
 				.webAppContextSetup(wac)
 				.apply(springSecurity())

@@ -36,7 +36,9 @@ public class JpaUserDetailsService implements UserDetailsService{
 		User user=userRepository.findByUsername(username)
 					.orElseThrow(()-> new UsernameNotFoundException("Username "+username+" Not Found"));
 		
-		return new org.springframework.security.core.userdetails
+		//commenting because we have Implemented User class as spring security class by implementing
+		//UserDetails and CredentialContainer
+		/*return new org.springframework.security.core.userdetails
 					.User(user.getUsername()
 							, user.getPassword()
 							,user.getEnabled()
@@ -44,8 +46,11 @@ public class JpaUserDetailsService implements UserDetailsService{
 							,user.getCredentialsNonExpired()
 							,user.getAccountNonLocked()
 							,convertToSpringAuthorities(user.getAuthorities()));
+		*/
+		return user;
 	}
 
+	//no need of following method kept for reference purpose
 	private Collection<? extends GrantedAuthority> convertToSpringAuthorities(Set<Authority> authorities) {
 		
 		if(authorities!=null && authorities.size()>0) {
