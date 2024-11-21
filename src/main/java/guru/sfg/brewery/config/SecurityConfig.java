@@ -96,7 +96,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
 			
-			http.csrf().disable();
+			//enabling csrf for application
+			http.csrf()
+				.ignoringAntMatchers("/h2-confole/**","/","/api/v1/**");
+				//.disable();
 			//h2 console setting
 			http.headers().frameOptions().sameOrigin();
 			
